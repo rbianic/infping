@@ -1,4 +1,6 @@
-// infping.go copyright Tor Hveem
+// 
+// Written by Tor Hveem copyright
+// Improved by Ronan Bianic <rb@fkgm.fr>
 // License: MIT
 
 package main
