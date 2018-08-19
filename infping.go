@@ -125,7 +125,7 @@ func writePoints(config *toml.Tree, con *client.Client, host string, sent string
 }
 
 func main() {  
-    config, err := toml.LoadFile("/root/work/bin/config.toml")  // You do specified explicitly the full path to config file
+    config, err := toml.LoadFile("config.toml")  // You do specified explicitly the full path to config file
     if err != nil {
         fmt.Println("Error:", err.Error())
         os.Exit(1)
