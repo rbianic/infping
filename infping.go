@@ -3,9 +3,10 @@
 
 package main
 
-import (
-    "github.com/influxdb/influxdb/client"
+import (  
+    "github.com/influxdata/influxdb/client"
     "github.com/pelletier/go-toml"
+    "github.com/coreos/go-systemd/daemon" // Add this for daemonized Infping
     "fmt"
     "log"
     "os"
@@ -17,24 +18,24 @@ import (
     "strconv"
 )
 
-func herr(err error) {
+func herr(err error) {  
     if err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
 }
 
-func perr(err error) {
+func perr(err error) {  
     if err != nil {
         fmt.Println(err)
     }
 }
 
-func slashSplitter(c rune) bool {
+func slashSplitter(c rune) bool {  
     return c == '/'
 }
 
-func readPoints(config *toml.TomlTree, con *client.Client) {
+func readPoints(config *toml.Tree, con *client.Client) {  
     args := []string{"-B 1", "-D", "-r0", "-O 0", "-Q 10", "-p 1000", "-l"}
     hosts := config.Get("hosts.hosts").([]interface{})
     for _, v := range hosts {
@@ -79,7 +80,7 @@ func readPoints(config *toml.TomlTree, con *client.Client) {
     log.Printf("stdout:%s", line)
 }
 
-func writePoints(config *toml.TomlTree, con *client.Client, host string, sent string, recv string, lossp string, min string, avg string, max string) {
+func writePoints(config *toml.Tree, con *client.Client, host string, sent string, recv string, lossp string, min string, avg string, max string) {  
     db := config.Get("influxdb.db").(string)
     loss, _ := strconv.Atoi(lossp)
     pts := make([]client.Point, 1)
@@ -112,16 +113,17 @@ func writePoints(config *toml.TomlTree, con *client.Client, host string, sent st
     bps := client.BatchPoints{
         Points:          pts,
         Database:        db,
-        RetentionPolicy: "default",
+        RetentionPolicy: "infinite", // You do specified explicitly the Retention Policy you use with your database
     }
     _, err := con.Write(bps)
     if err != nil {
         log.Fatal(err)
     }
+         daemon.SdNotify(false, "READY=1") // daemonize infping
 }
 
-func main() {
-    config, err := toml.LoadFile("config.toml")
+func main() {  
+    config, err := toml.LoadFile("/root/work/bin/config.toml")  // You do specified explicitly the full path to config file
     if err != nil {
         fmt.Println("Error:", err.Error())
         os.Exit(1)
